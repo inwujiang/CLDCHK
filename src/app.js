@@ -12,7 +12,7 @@ const { log4js, cleanLogs, catLogs } = require("./logger");
 const tokenDir = ".token";
 
 sdkLogger.configure({
-  isDebugEnabled: process.env.CLOUD189_VERBOSE === "1",
+  isDebugEnabled: process.env.CLOUD189_VERBOSE === "0",
 });
 
 // 个人任务签到
@@ -112,7 +112,13 @@ async function main() {
     const logs = catLogs();
     const events = recording.replay();
     const content = events.map((e) => `${e.data.join("")}`).join("  \n");
-    push("天翼云盘自动签到任务", logs + content);
+    const fullLog = logs + content;
+    // 替换手机号（脱敏后的也替换掉）
+    const maskedLog = fullLog.replace(/1\d{2}\*{5,7}\d{4}/g, '***手机号***');
+    // 替换邮箱后缀
+    const maskedLog2 = maskedLog.replace(/@189\.cn/g, '@***');
+    push("天翼云盘自动签到任务", maskedLog2);
+    //push("天翼云盘自动签到任务", logs + content);
     recording.erase();
     cleanLogs();
   }
